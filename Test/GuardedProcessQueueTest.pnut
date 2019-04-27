@@ -1,0 +1,56 @@
+#include "..\..\..\Classes2_0\Tools\Utilities.ston.nut"
+#include "..\..\..\Classes2_0\Tools\Debug.ston.nut"
+#include "..\..\..\Frameworks\VdcEventFrame\V1.0.0\VdcEventFrame.ston.nut"
+#include "..\..\..\Frameworks\VdcLoggingFrame\V1.0.0\VdcLoggingFrame.device.ston.nut"
+#include "..\..\..\Classes2_0\Queue\V1.0.0\Queue.class.nut"
+#include "..\..\..\Classes2_0\GuardedProcessQueue\V2.0.0\GuardedProcessQueue.class.nut"
+
+
+server.log("**********************************************************");
+server.log("Starting " + imp.environment());
+server.log("**********************************************************");
+
+testProcess <- GuardedProcessQueue("Test",eQueueType.fifo,10,3,0.05,30);
+
+testProcess.onProcess(function(element,seq){
+    server.log("Executing generic handler on " + element);
+    gEvents.SetEvent(testProcess.GetUnlockEvent(),{result="OK Generic",s=seq});
+    
+});
+testProcess.onReady(function(element,result,period,retrycnt){server.log("Executing ready handler with result " + result + ": in " + period + "msecs after " + retrycnt + " retries with " + testProcess.ElementsWaiting() + " waiting in queue");  });
+testProcess.onTimeout(function(element,timeoutperiod,retrycnt){server.log("Executing timeout handler after " + timeoutperiod + " msecs and " + retrycnt + " retries");  });
+testProcess.onMaxretries(function(element,retrycnt){server.log("Executing maxretries handler after " + retrycnt + " retries");  });
+testProcess.onException(function(element,state,e){server.log("Executing exception handler at state  " + state +  " with exception : " + e);  });
+testProcess.onMaxElements(function(item){server.log("Executing max element handler on " + item.n  );  });
+
+
+testProcess.StartProcessing();
+
+globalcnt <- 0;
+
+// repetitive injection of an element to process
+function injectElement()
+{
+
+	for (local i = 0; i < 4; i++)
+	{
+	  server.log(format("Inserting Element %d in processing queue",globalcnt ));
+		if (i%2 == 0)
+			testProcess.SendToBack("even",format("Even Element %d",globalcnt++),function(element,seq){
+			    server.log("Executing specific handler [" + element + "] on " + element); 
+			    injectEvent(seq);
+			    
+			});
+		else
+			testProcess.SendToBack("odd",format("Odd Element %d",globalcnt++));
+	}
+	imp.wakeup(10,injectElement);		
+}
+
+// repetitive sending of unlocking events.
+function injectEvent(seq)
+{
+	
+	imp.wakeup(12,function(){gEvents.SetEvent(testProcess.GetUnlockEvent(),{result="OK Specific",s=seq});});
+}
+injectElement();
