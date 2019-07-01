@@ -89,20 +89,28 @@ class GuardedProcessQueue extends Queue
 		gEvents.Subscribe(_processReadyEvent,"ready",function(param)
 		{
 			// check if response is from last issued process, if not, ignore
-			if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
+			try
 			{
-				if (param.error == "NoError")
+				if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
 				{
-					_processingResult = param.result;
-					_processingSmState = eGPQStates.ProcessingComplete;
-				}
-				else
-				{
-					_processingResult = param.result;
-					_processingError = param.error;
-					_processingSmState = eGPQStates.ProcessingError;
+					if (param.error == "NoError")
+					{
+						_processingResult = param.result;
+						_processingSmState = eGPQStates.ProcessingComplete;
+					}
+					else
+					{
+						_processingResult = param.result;
+						_processingError = param.error;
+						_processingSmState = eGPQStates.ProcessingError;
+					}
 				}
 			}
+			catch(e)
+				{
+					server.error(e);
+				}
+
 		}.bindenv(this));
 	}
 
