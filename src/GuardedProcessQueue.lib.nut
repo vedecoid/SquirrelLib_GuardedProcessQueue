@@ -88,20 +88,26 @@ class GuardedProcessQueue extends Queue
 		// event used to indicate end of processing
 		gEvents.Subscribe(_processReadyEvent,"ready",function(param)
 		{
-			// check if response is from last issued process, if not, ignore
-			if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
+			try {
+				// check if response is from last issued process, if not, ignore
+				if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
+				{
+					if (param.error == "NoError")
+					{
+						_processingResult = param.result;
+						_processingSmState = eGPQStates.ProcessingComplete;
+					}
+					else
+					{
+						_processingResult = param.result;
+						_processingError = param.error;
+						_processingSmState = eGPQStates.ProcessingError;
+					}
+				}
+			}
+			catch(e)
 			{
-				if (param.error == "NoError")
-				{
-					_processingResult = param.result;
-					_processingSmState = eGPQStates.ProcessingComplete;
-				}
-				else
-				{
-					_processingResult = param.result;
-					_processingError = param.error;
-					_processingSmState = eGPQStates.ProcessingError;
-				}
+				server.error(e);
 			}
 		}.bindenv(this));
 	}
@@ -203,7 +209,7 @@ class GuardedProcessQueue extends Queue
 						_processingSmState = eGPQStates.ProcessMaxRetries
 					else
 					{
-						if (_errorHandler != null) _errorHandler(_currentItemToProcess.e,_processingResult,_processingError);
+						if (_errorHandler != null) _errorHandler(_currentItemToProcess.e,_processingError);
 						Log("AppL3","[GuardedProcessQueue(" + _name + "):_processSm] Error occured : " + _processingError + ", retries = " + _retryCnt);	
 						_retryCnt++;
 						_processingSmState = eGPQStates.LaunchProcessing
