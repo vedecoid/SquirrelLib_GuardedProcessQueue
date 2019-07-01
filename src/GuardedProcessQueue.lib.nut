@@ -211,7 +211,7 @@ class GuardedProcessQueue extends Queue
 						_processingSmState = eGPQStates.ProcessMaxRetries
 					else
 					{
-						if (_errorHandler != null) _errorHandler(_currentItemToProcess.e,_processingResult,_processingError);
+						if (_errorHandler != null) _errorHandler(_currentItemToProcess.e,_processingError);
 						Log("AppL3","[GuardedProcessQueue(" + _name + "):_processSm] Error occured : " + _processingError + ", retries = " + _retryCnt);	
 						_retryCnt++;
 						_processingSmState = eGPQStates.LaunchProcessing
