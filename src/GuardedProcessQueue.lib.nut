@@ -65,6 +65,7 @@ class GuardedProcessQueue extends Queue
 		base.constructor(type);
 		_name = name;
 		_processReadyEvent = "GPQ_" + _name + "processready";
+		_simpleUnlockEvent = "GPQ_" + _name + "unlock";
 		_maxElements = maxelements;
 		_processingSmState = eGPQStates.Init;
 		_retryCnt = 0;
@@ -111,6 +112,12 @@ class GuardedProcessQueue extends Queue
 					server.error(e);
 				}
 
+		}.bindenv(this));
+
+		gEvents.Subscribe(_simpleUnlockEvent,"unlock",function(param)
+		{
+				//_processingResult = param.result;
+				_processingSmState = eGPQStates.ProcessingComplete;
 		}.bindenv(this));
 	}
 
@@ -315,7 +322,7 @@ class GuardedProcessQueue extends Queue
 	// for backward compatibility with existing code
 	function GetUnlockEvent()
 	{
-		return _processReadyEvent;
+		return _simpleUnlockEvent;
 	}
 	
 
