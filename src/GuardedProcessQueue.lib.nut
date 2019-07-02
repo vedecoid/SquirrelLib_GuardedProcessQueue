@@ -204,7 +204,7 @@ class GuardedProcessQueue extends Queue
 					else
 					{
 						if (_timeoutHandler != null) _timeoutHandler(_currentItemToProcess.e,_timeoutPeriod,_retryCnt);
-						SendToBack(_currentItemToProcess);
+						SendToBack(_currentItemToProcess.n,_currentItemToProcess.e,_currentItemToProcess.h);
 						Log("AppL3","[GuardedProcessQueue(" + _name + "):_processSm] Timeout occured waiting for processing, retries = " + _retryCnt);	
 						_retryCnt++;
 						_processingSmState = eGPQStates.WaitToProcess
