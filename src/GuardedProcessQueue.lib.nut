@@ -312,6 +312,13 @@ class GuardedProcessQueue extends Queue
 		return _processReadyEvent;
 	}
 
+	// for backward compatibility with existing code
+	function GetUnlockEvent()
+	{
+		return _processReadyEvent;
+	}
+	
+
 	function GetErrorEvent()
 	{
 		return _processErrorEvent;
