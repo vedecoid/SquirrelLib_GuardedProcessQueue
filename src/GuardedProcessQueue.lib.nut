@@ -16,6 +16,7 @@ class GuardedProcessQueue extends Queue
 
 	_name = null;
 	_processReadyEvent = null;
+	_simpleUnlockEvent = null;
 	_sequenceNr = null;
 	_processHandler = null;
 	_timeoutHandler = null;
