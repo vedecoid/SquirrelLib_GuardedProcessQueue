@@ -111,6 +111,7 @@ class GuardedProcessQueue extends Queue
 				_processingError = param.error;
 				_processingSmState = eGPQStates.ProcessingError;
 			}
+		}
 	}
 	
 	function Unlock()
