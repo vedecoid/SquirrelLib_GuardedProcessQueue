@@ -48,18 +48,8 @@ class GuardedProcessQueue extends Queue
 						if timeout = 0, queue is unblocked immediately, no waiting for end of process is assumed
 	minperiod : (float) minimal period between executions (in secs) to deal with access frequency limited resources
 								eg. EEPROM with limited write cycles, web service with max # connections/period, ...
-	overwrite : true ==> if elements (with a particular name) are added to the queue while there 
-								are other elements with the same name already in the queue, the newer value 
-								will overwrite the old ones
-								=> eg when access to an eeprom is limited to one write per 10 seconds, 
-								then of all write requests that arrive within those 10 seconds (with the same name) 
-								only the most recent will be written. This to avoid unnecessary writes.
-							false ==> all processing requests will be executed
 	*********************************************************/
 	// Define the Task and its underlying SM behaviour) 
-
-
-
 
 	constructor(name, type, timeout , maxRetries,execInterval,maxelements = 30 )
 	{
@@ -90,38 +80,45 @@ class GuardedProcessQueue extends Queue
 		// event used to indicate end of processing
 		gEvents.Subscribe(_processReadyEvent,"ready",function(param)
 		{
-			// check if response is from last issued process, if not, ignore
 			try
 			{
-				if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
-				{
-					if (param.error == "NoError")
-					{
-						_processingResult = param.result;
-						_processingSmState = eGPQStates.ProcessingComplete;
-					}
-					else
-					{
-						_processingResult = param.result;
-						_processingError = param.error;
-						_processingSmState = eGPQStates.ProcessingError;
-					}
-				}
+				NotifyReady(param);
 			}
 			catch(e)
-				{
-					server.error(e);
-				}
-
+			{
+				ErrorLog("[GuardedProcessQueue-ctor " + _name + "] Exception in ready notification : " +  e);
+			}
 		}.bindenv(this));
 
 		gEvents.Subscribe(_simpleUnlockEvent,"unlock",function(param)
 		{
-				//_processingResult = param.result;
-				_processingSmState = eGPQStates.ProcessingComplete;
+				Unlock();
 		}.bindenv(this));
 	}
 
+ 	function NotifyReady(param)
+  {
+  	if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
+		{
+			if (param.error == "NoError")
+			{
+				_processingResult = param.result;
+				_processingSmState = eGPQStates.ProcessingComplete;
+			}
+			else
+			{
+				_processingResult = param.result;
+				_processingError = param.error;
+				_processingSmState = eGPQStates.ProcessingError;
+			}
+	}
+	
+	function Unlock()
+	{
+		_processingSmState = eGPQStates.ProcessingComplete;
+	}
+	
+	
 	function _processSm()
 	{
 		try 
@@ -144,6 +141,7 @@ class GuardedProcessQueue extends Queue
 				if (_buffer.len() != 0) 
 				{
 					_currentItemToProcess = base.Receive();
+
 					Log("AppL3","[GuardedProcessQueue(" + _name + "):_processSm]  Processing Item /" + _currentItemToProcess.n + "/, " +  _buffer.len() + " elements remaining in queue");	
 					_retryCnt = 0;
 
@@ -269,14 +267,13 @@ class GuardedProcessQueue extends Queue
 		_currentSequenceHandler = handler;
 	}
 
-		function setReceivedSequenceHandler(handler)
+	function setReceivedSequenceHandler(handler)
 	{
 		_receivedSequenceHandler = handler;
 	}
 
 	function StartProcessing()
 	{
-		// start processing
 		_processSm();
 	}
 
