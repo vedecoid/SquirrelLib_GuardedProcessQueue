@@ -80,14 +80,7 @@ class GuardedProcessQueue extends Queue
 		// event used to indicate end of processing
 		gEvents.Subscribe(_processReadyEvent,"ready",function(param)
 		{
-			try
-			{
-				NotifyReady(param);
-			}
-			catch(e)
-			{
-				ErrorLog("[GuardedProcessQueue-ctor " + _name + "] Exception in ready notification : " +  e);
-			}
+			NotifyReady(param);
 		}.bindenv(this));
 
 		gEvents.Subscribe(_simpleUnlockEvent,"unlock",function(param)
@@ -98,20 +91,27 @@ class GuardedProcessQueue extends Queue
 
  	function NotifyReady(param)
   {
-  	if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
-		{
-			if (param.error == "NoError")
+  		try
 			{
-				_processingResult = param.result;
-				_processingSmState = eGPQStates.ProcessingComplete;
+		  	if (getCurrentSequence(_currentItemToProcess.e) == getReceivedSequence(param.result))
+				{
+					if (param.error == "NoError")
+					{
+						_processingResult = param.result;
+						_processingSmState = eGPQStates.ProcessingComplete;
+					}
+					else
+					{
+						_processingResult = param.result;
+						_processingError = param.error;
+						_processingSmState = eGPQStates.ProcessingError;
+					}
+				}
 			}
-			else
+			catch(e)
 			{
-				_processingResult = param.result;
-				_processingError = param.error;
-				_processingSmState = eGPQStates.ProcessingError;
+				ErrorLog("[GuardedProcessQueue" + _name + ":NotifyReady] Exception in ready notification : " +  e);
 			}
-		}
 	}
 	
 	function Unlock()
