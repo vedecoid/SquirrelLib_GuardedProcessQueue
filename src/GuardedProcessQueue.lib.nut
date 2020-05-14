@@ -15,9 +15,6 @@ class GuardedProcessQueue extends Queue
 	static VERSION = "2.0.0";
 
 	_name = null;
-	_processReadyEvent = null;
-	_simpleUnlockEvent = null;
-	_sequenceNr = null;
 	_processHandler = null;
 	_timeoutHandler = null;
 	_exceptionHandler = null;
@@ -25,8 +22,6 @@ class GuardedProcessQueue extends Queue
 	_maxretryHandler = null;
 	_maxelementHandler = null;
 	_errorHandler = null;
-	_currentSequenceHandler = null;
-	_receivedSequenceHandler = null;
 
 	_processingPeriod = null;
 	_processingResult = null;
@@ -55,8 +50,6 @@ class GuardedProcessQueue extends Queue
 	{
 		base.constructor(type);
 		_name = name;
-		_processReadyEvent = "GPQ_" + _name + "processready";
-		_simpleUnlockEvent = "GPQ_" + _name + "unlock";
 		_maxElements = maxelements;
 		_processingSmState = eGPQStates.Init;
 		_retryCnt = 0;
@@ -64,29 +57,6 @@ class GuardedProcessQueue extends Queue
 		_timeoutPeriod = timeout;
 		_execInterval = execInterval;
 		_maxRetries = maxRetries;
-		_sequenceNr = 0;
-
-		// check the dependencies
-	 	if (!("gEvents" in getroottable()))
-				throw ("[GuardedProcessQueue-ctor " + _name + "] Cannot instantiate GuardedProcessQueue without Event framework included");
-
-		if (!("lib" in getroottable()))
-				throw ("[GuardedProcessQueue-ctor " + _name + "] Cannot instantiate GuardedProcessQueue without Lib functions included");
-		
-		// check for inclusion of logging framework
-		//if (!("dataDebugAndTrace" in getroottable()))
-		//		throw ("[GuardedProcessQueue-ctor " + _name + "] Cannot instantiate GuardedProcessQueue without Logging framework included");
-
-		// event used to indicate end of processing
-		gEvents.Subscribe(_processReadyEvent,"ready",function(param)
-		{
-			NotifyReady(param);
-		}.bindenv(this));
-
-		gEvents.Subscribe(_simpleUnlockEvent,"unlock",function(param)
-		{
-				Unlock();
-		}.bindenv(this));
 	}
 
  	function NotifyReady(param)
@@ -253,32 +223,12 @@ class GuardedProcessQueue extends Queue
 		imp.wakeup(_execInterval,_processSm.bindenv(this));
 	}
 
-	function getCurrentSequence(param)
-	{
-		return _currentSequenceHandler(param);
-	}
-
-	function getReceivedSequence(param)
-	{
-		return _receivedSequenceHandler(param);
-	}
-
-	function setCurrentSequenceHandler(handler)
-	{
-		_currentSequenceHandler = handler;
-	}
-
-	function setReceivedSequenceHandler(handler)
-	{
-		_receivedSequenceHandler = handler;
-	}
-
 	function StartProcessing()
 	{
 		_processSm();
 	}
 
-	// sets a generic handler if none is supplied with the queued elements
+	// sets a generic handlers if none is supplied with the queued elements
 	function onProcess(processhandler)
 	{
 		_processHandler = processhandler;
@@ -314,23 +264,6 @@ class GuardedProcessQueue extends Queue
 		_maxelementHandler = handler;
 	}
 
-	function GetReadyEvent()
-	{
-		return _processReadyEvent;
-	}
-
-	// for backward compatibility with existing code
-	function GetUnlockEvent()
-	{
-		return _simpleUnlockEvent;
-	}
-	
-
-	function GetErrorEvent()
-	{
-		return _processErrorEvent;
-	}
-	
 	// overridden base functions
 	function SendToBack(name, element, handler = null)
 	{
