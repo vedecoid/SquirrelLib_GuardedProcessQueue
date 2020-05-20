@@ -1,0 +1,15 @@
+{
+    "product-id": "5694377e-ebbc-8762-92b0-659d0f0a26ba", 
+    "agent-file": "src\\agent.nut", 
+    "device-file": "src\\device.nut", 
+    "device-group-id": "88e9d247-3f32-6cf6-6998-bd4143c996f5", 
+    "cloud-url": "https://api.electricimp.com/v5/", 
+    "builder-settings": {
+        "variable-definitions": {}, 
+        "node_path": "C:\\Program Files\\nodejs\\node.exe", 
+        "builder_cli_path": "C:\\Users\\dirk\\Application Data\\npm\\node_modules\\Builder\\src\\cli.js"
+    }, 
+    "device-group-type": "development_devicegroup", 
+    "deployment-id": "74f5ae15-f4b3-23d7-bd4f-371cba46e7da", 
+    "collaborator-id": null
+}
