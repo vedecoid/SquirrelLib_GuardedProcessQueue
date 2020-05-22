@@ -1,5 +1,7 @@
 @include once "github:vedecoid/SquirrelLib_Queue/src/Queue.lib.nut@V2.0.0" 
 
+
+const MAXPROCESSINGTIMEOUTPERIOD = 10;
 /*	enum eGPQStates {
 		Init,
 		Idle,
@@ -32,7 +34,8 @@ class GuardedProcessQueue extends Queue
 
 	_name = null;
 	_processHandler = null;
-	_timeoutHandler = null;
+	_processingtimeoutHandler = null;
+	_queueingtimeoutHandler = null;
 	_exceptionHandler = null;
 	_readyHandler = null;
 	_maxretryHandler = null;
@@ -41,62 +44,64 @@ class GuardedProcessQueue extends Queue
 
 	_processingResult = null;
 	_processingError = null;
+	_processingTimeout = null;
+	_queueingTimeout = null;
 
 	_maxElements = null;
 	_maxRetries = null;
 	_retryCnt = null;
-	_timeoutCnt = null;
 	_processingSmState = null;
-	_timeoutPeriod = null;
+	_timeoutMaxPeriod = null;
+
 	_currentItemToProcess = null;
 	_timeoutwakeup = null;
 
 	/********************************************************
 	name : name of the queue
 	type : eQueueType.fifo or eQueueType.lifo
-	timeout : (float) timeout perios in seconds after which the queue gets unblocked. 
-						if timeout = 0, queue is unblocked immediately, no waiting for end of process is assumed
+	maxprocessingtimeout : (float) timeout perios in seconds after which the queue gets unblocked. 
+						is is to protect against a scenario where processing is blocked and the processing handler doesn't properly handle timeout
+	maxretries : nr of retries attempted before passing to the next item in queue
+	maxelements : nr of entries that queue can hold. If exceeded a notification callback is triggered
 	*********************************************************/
 	// Define the Task and its underlying SM behaviour) 
 
-	constructor(name, type, timeout , maxRetries,maxelements = 30 )
+	constructor(name, type, maxprocessingtimeout , maxretries,maxelements)
 	{
 		base.constructor(type);
 		_name = name;
 		_maxElements = maxelements;
 		_processingSmState = eGPQStates.Idle;
 		_retryCnt = 0;
-		_timeoutCnt = 0;
-		_timeoutPeriod = timeout;
-		_maxRetries = maxRetries;
-		_timeoutwakeup = imp.wakeup(9999,function(){});
+		_timeoutMaxPeriod = maxprocessingtimeout;
+		_maxRetries = maxretries;
 	}
 
- 	function NotifyReady(param)
+ 	function NotifyProcessingReady(param)
   {
 		_processingResult = param;
-		imp.cancelwakeup(_timeoutwakeup);
+		_cancelTimeoutProtection();
 		ProcessChangeState(eGPQStates.ProcessingComplete);
 	}
 
-	function NotifyError(param)
+	function NotifyProcessingError(param)
   {
 		_processingError = param;
-		imp.cancelwakeup(_timeoutwakeup);		
+		_cancelTimeoutProtection();
 		ProcessChangeState(eGPQStates.ProcessingError);		
 	}
 
-	function NotifyTimeout(param)
+	function NotifyProcessingTimeout(timeout)
   {
-		_processingError = param;
-		imp.cancelwakeup(_timeoutwakeup);		
+		_processingTimeout = timeout;
+		_cancelTimeoutProtection();	
 		ProcessChangeState(eGPQStates.ProcessingTimeout);		
 	}
 
 	function Unlock()
 	{
 		_processingSmState = eGPQStates.ProcessingComplete;
-		imp.cancelwakeup(_timeoutwakeup);		
+		_cancelTimeoutProtection();
 		ProcessChangeState(eGPQStates.ProcessingComplete,0.1);	
 	}
 
@@ -130,6 +135,20 @@ class GuardedProcessQueue extends Queue
 			ProcessChangeState(eGPQStates.Idle);
 		}
 	}
+
+	function _cancelTimeoutProtection()
+	{
+		if (_timeoutwakeup != null)
+		{
+			imp.cancelwakeup(_timeoutwakeup);		
+			_timeoutwakeup = null;
+		}
+	}
+
+	function _startTimeoutProtection()
+	{
+		_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutMaxPeriod);
+	}
 	
 	function _processSm()
 	{
@@ -154,8 +173,8 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.LaunchProcessingNew:
 				_currentItemToProcess = base.Receive();
 				_retryCnt = 0;			
-				// change to the timeout state after the timeout period
-				_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutPeriod);
+				// change to the timeout state after the timeout period. This is needed in case the queue entry fails to notify timeout
+				_startTimeoutProtection();
 
 				// if no specific handler is defined for this entry, then use the generic one
 				if (_currentItemToProcess.h == null) 
@@ -175,7 +194,7 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.LaunchProcessing:
 
 				// change to the timeout state after the timeout period
-				_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutPeriod);
+				_startTimeoutProtection();
 
 				// if no specific handler is defined for this entry, then use the generic one
 				if (_currentItemToProcess.h == null) 
@@ -237,9 +256,9 @@ class GuardedProcessQueue extends Queue
 						ProcessChangeState(eGPQStates.ProcessMaxRetries);
 					else
 					{
-						if (_timeoutHandler != null) 
-							_timeoutHandler(_currentItemToProcess.e,_timeoutPeriod,_retryCnt);
-						Log("AppL3","[GuardedProcessQueue(" + _name + "):_processSm] Timeout occured waiting for processing, retries = " + _retryCnt);	
+						if (_processingtimeoutHandler != null) 
+							_processingtimeoutHandler(_currentItemToProcess.e,_processingTimeout,_retryCnt);
+						Log("AppL3",format("[GuardedProcessQueue(%s):_processSm] Timeout of %d occured waiting for processing, retries = %d",_name,_processingTimeout, _retryCnt));	
 						_retryCnt++;
 						ProcessChangeState(eGPQStates.LaunchProcessing);
 					}
@@ -290,9 +309,14 @@ class GuardedProcessQueue extends Queue
 		_errorHandler = handler;
 	}
 
-	function onTimeout(handler)
+	function onProcessingTimeout(handler)
 	{
-		_timeoutHandler = handler;
+		_processingtimeoutHandler = handler;
+	}
+
+	function onQueueingTimeout(handler)
+	{
+		_queueingtimeoutHandler = handler;
 	}
 
 		function onMaxretries(handler)
@@ -311,7 +335,7 @@ class GuardedProcessQueue extends Queue
 	}
 
 	// overridden base functions
-	function SendToBack(name, element, processinghandler,onready = null)
+	function SendToBack(name, element, processinghandler,onreadyhandler )
 	{
 		if (base.ElementsWaiting() > _maxElements)
 		{
@@ -321,14 +345,14 @@ class GuardedProcessQueue extends Queue
 		}
 		else
 		{
-			base.SendToBack({n = name,e = element,h = processinghandler,r = onready});
+			base.SendToBack({n = name,e = element,h = processinghandler,r = onreadyhandler});
 			if (_processingSmState == eGPQStates.Idle)
 				_checkForEntry();
 		}
 	}
 
 	// sends new element to be processed to the front of the queue. Can be used to implement priority schemes.
-	function SendToFront(name, element, processinghandler,onready = null)
+	function SendToFront(name, element, processinghandler,onreadyhandler)
 	{
 		if (base.ElementsWaiting() > _maxElements)
 		{
@@ -338,7 +362,7 @@ class GuardedProcessQueue extends Queue
 		}
 		else
 		{
-			base.SendToFront({n = name,e = element,h = processinghandler,r = onready});
+			base.SendToFront({n = name,e = element,h = processinghandler,r = onreadyhandler});
 			if (_processingSmState == eGPQStates.Idle)
 				_checkForEntry();			
 		}

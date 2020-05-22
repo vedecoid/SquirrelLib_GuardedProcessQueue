@@ -1,17 +1,271 @@
 {
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"mi",
+				"hardware.millis\t()"
+			],
+			[
+				"cha",
+				"imp.getchannel\t()"
+			],
+			[
+				"im",
+				"imp.cancelwakeup\t(timer)"
+			]
+		]
+	},
 	"buffers":
 	[
 		{
 			"file": "src/agent.nut",
+			"settings":
+			{
+				"buffer_size": 32,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/src/GuardedProcessQueue.lib.nut",
+			"settings":
+			{
+				"buffer_size": 10947,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
 		},
 		{
 			"file": "src/device.nut",
+			"settings":
+			{
+				"buffer_size": 3473,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": ".gitignore",
+			"settings":
+			{
+				"buffer_size": 1190,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "settings/auth.info",
+			"settings":
+			{
+				"buffer_size": 492,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "electric-imp.sublime-project",
+			"settings":
+			{
+				"buffer_size": 74,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
 		}
 	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"git",
+				"Package Control: Install Package"
+			],
+			[
+				"in",
+				"Package Control: Install Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 143.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/Test",
+		"/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/Test/build",
+		"/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/Test/settings",
+		"/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/Test/src",
+		"/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/src"
+	],
+	"file_history":
+	[
+		"/S/VedecoRepo/Library/SquirrelLib/HwDrivers_MCP230xx/test/electric-imp.sublime-project",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_ConnectionMgt_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/build/preprocessed.device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_CommsAgentBuffered_Device.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/Queue/src/Queue.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/settings/auth.info",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/settings/electric-imp.settings",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_Agent.main.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcCentralDbAccess/src/VdcCentralDbAccess.agent.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_Globals_Agent.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_CommsHostGuarded_Device.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTools/VdcDebug.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/DataElements/src/BackedDataElement.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/DataElements/src/DataElement.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/GeoPosition/test/electric-imp.sublime-project",
+		"/S/VedecoRepo/Library/SquirrelLib/CircularByteFifo/Test/electric-imp.sublime-project",
+		"/S/VedecoRepo/Library/SquirrelLib/CircularByteFifo/Src/CircularByteFifo.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/CircularByteFifo/Test/src/agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/CircularByteFifo/Src/AutoSizingCircularByteFifo.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_HardwareInit_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Model/Imp_VolatileData_Model.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Model/Pc_VolatileData_Model.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_LocalCmd_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Common/PC_Enums.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Common/Pc_Consts.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/AdcCaptureSensor/src/AdcCaptureSensor.device.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_Device.main.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTools/VdcLogging.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcLoggingFrame/src/VdcLoggingFrameOffline.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_Logging_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Model/Pc_HostCommands_Model.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcLoggingFrame/src/VdcLoggingFrame.agent.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Common/Pc_CmdLut.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_HttpHandler_Agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcLoggingFrame/src/VdcLoggingFrameLocal.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcLoggingFrame/src/VdcLoggingFrame.device.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/build/preprocessed.agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcRestFrame/src/RestModelTableMap.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/HwDrivers_MCP342x/src/HwDrivers_MCP342x.device.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_Sensors_Device.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/src/GuardedProcessQueue.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTools/VdcFrameworksCheck.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/ConnectionMgt/src/VdcConnectionManager.device.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/WeekClock/src/WeekClock.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTools/VdcDefaultFileHeader.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/src/VdcEventFrame.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_ImpCommands_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_Logging_Agent.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_VolatileDataParse_Device.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/WeekClock/test/SwitchClock_Test.pnut",
+		"/S/VedecoRepo/Library/SquirrelLib/WeekClock/test/SwitchClock_Test.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/WeekClock/src/WeekClockWithScheduler.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTimerFrame/src/VdcTimerFrame.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTimerFrame/test/src/agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTools/VdcFindGeoLocationAndTimezone.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_RpcHandlers_Agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/LocalTime/src/LocalTime.device.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Common/Pc_HostCmdLut.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_MainLoop_Agent.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_ConnectionMgt_Agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/ConnectionMgt/src/VdcConnectionManager.agent.lib.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcTools/VdcUtilities.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_RpcHandlers_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_Upgrade_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Agent/Pc_LocalTime_Agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/Forks/Bullwinkle/src/clsBullwinkle.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_HostTimeSync_Device.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/LocalTime/src/LocalTime_Geonames.agent.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_Hardware_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Html/Pc_WebPage_Agent.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/.project",
+		"/S/VedecoRepo/Library/SquirrelLib/LocalTime/src/LocalTime_None.agent.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/electric-imp.sublime-project",
+		"/S/VedecoRepo/Library/SquirrelLib/DataElements/src/BackedDataElementWithScheduler.lib.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Html/Agent Website PoolCommander.html",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/Device/Pc_Device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/device.nut",
+		"/S/VedecoRepo/Projects/PoolCommander/Squirrel/src/agent.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/settings/auth.info",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/src/Device/PoolAnalyserV1Test_Conversion_Device.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/src/Device/PoolAnalyserV1Test_Calibration_Device.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/src/Device/PoolAnalyserV1Test_device.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/src/Agent/PoolAnalyserV1Test_agent.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/build/preprocessed.device.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/src/Device/PoolAnalyserV1Test_Sampling_Device.nut",
+		"/S/VedecoRepo/Projects/PoolAdvisor/Firmware/Test/PoolAnalyserV1Test/settings/electric-imp.settings",
+		"/S/VedecoRepo/Projects/Test/PoolAnalyserV1Test/src/device.nut",
+		"/S/VedecoRepo/Projects/Test/PoolAnalyserV1Test/src/agent.nut",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/test/build/preprocessed.device.nut",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/test/build/preprocessed.agent.nut",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/test/src/VdcEventFrame.agent.test.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/test/build/preprocessed.device.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/test/build/preprocessed.agent.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/test/src/VdcEventFrame.device.test.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/test/src/VdcEventFrame.agent.test.nut",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/test/settings/auth.info",
+		"/S/VedecoRepo/Library/SquirrelLib/VdcEventFrame/test/electric-imp.sublime-project",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/src/VdcEventFrame.lib.nut",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/test/settings/electric-imp.settings",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/test/src/agent.nut",
+		"/C/LocalRepo/SquirelLib/Frameworks/VdcEventFrame/test/src/device.nut",
+		"/C/LocalRepo/SquirelLib/Frameworks/EventFrame/settings/electric-imp.settings",
+		"/C/LocalRepo/SquirelLib/Frameworks/EventFrame/src/device.nut",
+		"/H/Vedeco/Productie/Batches/PcV2.9C (1768) b9890 (650-669)/PoolCommander V2.9C (1768) Firmware b9890 upgrade.hex",
+		"/H/Vedeco/Productie/Batches/PcV2.8B (2368) b9890 (485-499)/PoolCommander V2.8B (2368) Firmware b9890 upgrade.hex",
+		"/C/Users/dirk/electric-imp-project/src/device.nut",
+		"/C/Users/dirk/electric-imp-project/src/agent.nut"
+	],
+	"find":
+	{
+		"height": 39.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"_processingResult"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": true,
+		"wrap": true
+	},
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -20,15 +274,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-					    "buffer_size": 33,
+						"buffer_size": 32,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								33,
-								33
+								32,
+								32
 							]
 						],
 						"settings":
@@ -39,35 +293,92 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 5,
 					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 0,
-			"sheets":
-			[
+				},
 				{
 					"buffer": 1,
-					"file": "src/device.nut",
+					"file": "/S/VedecoRepo/Library/SquirrelLib/GuardedProcessQueue/src/GuardedProcessQueue.lib.nut",
 					"semi_transient": false,
 					"settings":
 					{
-					    "buffer_size": 33,
+						"buffer_size": 10947,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								33,
-								33
+								8808,
+								8808
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Electric Imp Developer/syntax/squirrel.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3024.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 2,
+					"file": "src/device.nut",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3473,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3435,
+								3435
 							]
 						],
 						"settings":
 						{
 							"syntax": "squirrel.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1119.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": ".gitignore",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 1190,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Git Formats/Git Ignore.sublime-syntax"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -75,10 +386,74 @@
 					},
 					"stack_index": 0,
 					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "settings/auth.info",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 492,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								476,
+								476
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "electric-imp.sublime-project",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 74,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								74,
+								74
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
 				}
 			]
 		}
 	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 40.0
+	},
 	"layout":
 	{
 		"cells":
@@ -99,7 +474,7 @@
 		"cols":
 		[
 			0.0,
-			0.5,
+			0.643872798272,
 			1.0
 		],
 		"rows":
@@ -107,5 +482,69 @@
 			0.0,
 			1.0
 		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.textarea":
+	{
+		"height": 268.0
+	},
+	"pinned_build_system": "",
+	"project": "electric-imp.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"test\\build\\preprocessed.agent.nut"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"selectiveUpdateTable"
+			]
+		],
+		"width": 592.0
+	},
+	"selected_group": 1,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 265.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
 	}
 }

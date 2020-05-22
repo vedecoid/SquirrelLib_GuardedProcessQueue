@@ -18,14 +18,14 @@ testProcess <- GuardedProcessQueue("Test",eQueueType.fifo,2,3,30);
 testProcess.onProcess(function(element){
     server.log("Executing generic handler on " + element);
     imp.wakeup(2,function(){
-    	testProcess.NotifyReady("It's done");
+    	testProcess.NotifyProcessingReady("It's done");
     	});
 });
 
 testProcess.onReady(function(element,result,retrycnt) {
 	server.log("Executing ready handler with result " + result + ": after " + retrycnt + " retries with " + testProcess.ElementsWaiting() + " waiting in queue");  });
 
-testProcess.onTimeout(function(element,timeoutperiod,retrycnt) {
+testProcess.onProcessingTimeout(function(element,timeoutperiod,retrycnt) {
 	server.log("Executing timeout handler after " + timeoutperiod + " secs and " + retrycnt + " retries");  });
 
 testProcess.onMaxretries(function(element,retrycnt) {
@@ -49,53 +49,52 @@ function injectElement()
 	  server.log(format("Inserting Element %d in processing queue",globalcnt ));
 
 /**** SPECIFIC HANDLERS  TEST ***************************/
-
-/*			testProcess.SendToBack("even",
-				format("Even Element %d",globalcnt++),
-				function(element) {
-
-			    server.log("Executing specific processing handler [" + element + "] on " + element); 
-			    imp.wakeup(0.1,function()
-			    	{
-			    		server.log("Notifying Ready ...");
-			    		testProcess.NotifyReady("It's done locally")})},
-			  function(element,result,retrycnt){
+/*
+			testProcess.SendToBack("even",					// name
+				{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
+				function(element) {											// processinghandler
+			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
+			    imp.wakeup(0.1,function()	{server.log("Notifying Ready ...");	testProcess.NotifyProcessingReady("It's done locally")})},
+			  function(element,result,retrycnt){			// readyhandler
 			  	server.log("Executing specific ready handler [" + element.e + "] with result :" + result + " after " + retrycnt + " retries"); 
-			  	});*/
+			  	});
 
-
+*/
 /**** GENERIC HANDLERS  TEST ***************************/
 
 /*			testProcess.SendToBack("odd",format("Odd Element %d",globalcnt++),null,null);*/
 
-/**** ERRORNOTIFICATION TEST ***************************/
+/**** ERROR NOTIFICATION TEST ***************************/
 
 /*			testProcess.SendToBack("even",
-				format("Even Element %d",globalcnt++),
+{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
 				function(element) {
 
-			    server.log("Executing specific processing handler [" + element + "] on " + element); 
-			    imp.wakeup(0.2,function()
-			    	{
+			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
+			    imp.wakeup(0.2,function()	{
 			    		server.log("Notifying Error ...");
-			    		testProcess.NotifyError("Error in reception")})},
+			    		testProcess.NotifyProcessingError("Error in reception")})},
 			  	null);
 
 
 	}
 */
-	/**** ERRORNOTIFICATION TEST ***************************/
+	/**** TIMEOUT NOTIFICATION TEST ***************************/
 
-			testProcess.SendToBack("even",
-				format("Even Element %d",globalcnt++),
-				function(element) {
+			testProcess.SendToBack("even",					// name
+				{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
+				function(element) {											// processinghandler
+			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
+			    local readywakeup = imp.wakeup(3,function()	{
+			    	server.log("Notifying Ready ...");	
+			    	testProcess.NotifyProcessingReady("It's done locally")});
+			    // emulate timeout situation
+			    imp.wakeup(element.timeout,function() {
+			    	imp.cancelwakeup(readywakeup);
+			    	testProcess.NotifyProcessingTimeout("timed out....")}.bindenv(this));
 
-			    server.log("Executing specific processing handler [" + element + "] on " + element); 
-			    imp.wakeup(0.2,function()
-			    	{
-			    		server.log("Notifying timeout ...");
-			    		testProcess.NotifyTimeout("Timeout in reception")})},
-			  	null);
+			    },
+			  	null);		// no ready handler for this test
 
 
 	}
