@@ -25,7 +25,7 @@ testProcess.onProcess(function(element){
 testProcess.onReady(function(element,result,retrycnt) {
 	server.log("Executing ready handler with result " + result + ": after " + retrycnt + " retries with " + testProcess.ElementsWaiting() + " waiting in queue");  });
 
-testProcess.onProcessingTimeout(function(element,timeoutperiod,retrycnt) {
+testProcess.onProcessingTimeout(function(element,retrycnt) {
 	server.log("Executing timeout handler after " + timeoutperiod + " secs and " + retrycnt + " retries");  });
 
 testProcess.onMaxretries(function(element,retrycnt) {
@@ -98,7 +98,7 @@ function injectElement()
 
 
 	}
-	imp.wakeup(10,injectElement);		
+	//imp.wakeup(10,injectElement);		
 }
 
 injectElement();

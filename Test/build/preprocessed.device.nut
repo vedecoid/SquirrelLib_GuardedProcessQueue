@@ -998,6 +998,8 @@ class Queue
 }
 //line 2 "..\src\GuardedProcessQueue.lib.nut"
 
+
+const MAXPROCESSINGTIMEOUTPERIOD = 10;
 /*	enum eGPQStates {
 		Init,
 		Idle,
@@ -1030,7 +1032,8 @@ class GuardedProcessQueue extends Queue
 
 	_name = null;
 	_processHandler = null;
-	_timeoutHandler = null;
+	_processingtimeoutHandler = null;
+	_queueingtimeoutHandler = null;
 	_exceptionHandler = null;
 	_readyHandler = null;
 	_maxretryHandler = null;
@@ -1039,62 +1042,64 @@ class GuardedProcessQueue extends Queue
 
 	_processingResult = null;
 	_processingError = null;
+	_processingTimeout = null;
+	_queueingTimeout = null;
 
 	_maxElements = null;
 	_maxRetries = null;
 	_retryCnt = null;
-	_timeoutCnt = null;
 	_processingSmState = null;
-	_timeoutPeriod = null;
+	_timeoutMaxPeriod = null;
+
 	_currentItemToProcess = null;
 	_timeoutwakeup = null;
 
 	/********************************************************
 	name : name of the queue
 	type : eQueueType.fifo or eQueueType.lifo
-	timeout : (float) timeout perios in seconds after which the queue gets unblocked. 
-						if timeout = 0, queue is unblocked immediately, no waiting for end of process is assumed
+	maxprocessingtimeout : (float) timeout perios in seconds after which the queue gets unblocked. 
+						is is to protect against a scenario where processing is blocked and the processing handler doesn't properly handle timeout
+	maxretries : nr of retries attempted before passing to the next item in queue
+	maxelements : nr of entries that queue can hold. If exceeded a notification callback is triggered
 	*********************************************************/
 	// Define the Task and its underlying SM behaviour) 
 
-	constructor(name, type, timeout , maxRetries,maxelements = 30 )
+	constructor(name, type, maxprocessingtimeout , maxretries,maxelements)
 	{
 		base.constructor(type);
 		_name = name;
 		_maxElements = maxelements;
 		_processingSmState = eGPQStates.Idle;
 		_retryCnt = 0;
-		_timeoutCnt = 0;
-		_timeoutPeriod = timeout;
-		_maxRetries = maxRetries;
-		_timeoutwakeup = imp.wakeup(9999,function(){});
+		_timeoutMaxPeriod = maxprocessingtimeout;
+		_maxRetries = maxretries;
 	}
 
- 	function NotifyReady(param)
+ 	function NotifyProcessingReady(param)
   {
 		_processingResult = param;
-		imp.cancelwakeup(_timeoutwakeup);
+		_cancelTimeoutProtection();
 		ProcessChangeState(eGPQStates.ProcessingComplete);
 	}
 
-	function NotifyError(param)
+	function NotifyProcessingError(param)
   {
 		_processingError = param;
-		imp.cancelwakeup(_timeoutwakeup);		
+		_cancelTimeoutProtection();
 		ProcessChangeState(eGPQStates.ProcessingError);		
 	}
 
-	function NotifyTimeout(param)
+	function NotifyProcessingTimeout(timeout)
   {
-		_processingError = param;
-		imp.cancelwakeup(_timeoutwakeup);		
+		_processingTimeout = timeout;
+		_cancelTimeoutProtection();	
 		ProcessChangeState(eGPQStates.ProcessingTimeout);		
 	}
 
 	function Unlock()
 	{
 		_processingSmState = eGPQStates.ProcessingComplete;
-		imp.cancelwakeup(_timeoutwakeup);		
+		_cancelTimeoutProtection();
 		ProcessChangeState(eGPQStates.ProcessingComplete,0.1);	
 	}
 
@@ -1128,6 +1133,20 @@ class GuardedProcessQueue extends Queue
 			ProcessChangeState(eGPQStates.Idle);
 		}
 	}
+
+	function _cancelTimeoutProtection()
+	{
+		if (_timeoutwakeup != null)
+		{
+			imp.cancelwakeup(_timeoutwakeup);		
+			_timeoutwakeup = null;
+		}
+	}
+
+	function _startTimeoutProtection()
+	{
+		_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutMaxPeriod);
+	}
 	
 	function _processSm()
 	{
@@ -1152,8 +1171,8 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.LaunchProcessingNew:
 				_currentItemToProcess = base.Receive();
 				_retryCnt = 0;			
-				// change to the timeout state after the timeout period
-				_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutPeriod);
+				// change to the timeout state after the timeout period. This is needed in case the queue entry fails to notify timeout
+				_startTimeoutProtection();
 
 				// if no specific handler is defined for this entry, then use the generic one
 				if (_currentItemToProcess.h == null) 
@@ -1173,7 +1192,7 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.LaunchProcessing:
 
 				// change to the timeout state after the timeout period
-				_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutPeriod);
+				_startTimeoutProtection();
 
 				// if no specific handler is defined for this entry, then use the generic one
 				if (_currentItemToProcess.h == null) 
@@ -1235,9 +1254,9 @@ class GuardedProcessQueue extends Queue
 						ProcessChangeState(eGPQStates.ProcessMaxRetries);
 					else
 					{
-						if (_timeoutHandler != null) 
-							_timeoutHandler(_currentItemToProcess.e,_timeoutPeriod,_retryCnt);
-						Log("AppL3","[GuardedProcessQueue(" + _name + "):_processSm] Timeout occured waiting for processing, retries = " + _retryCnt);	
+						if (_processingtimeoutHandler != null) 
+							_processingtimeoutHandler(_currentItemToProcess.e,_processingTimeout,_retryCnt);
+						Log("AppL3",format("[GuardedProcessQueue(%s):_processSm] Timeout of %d occured waiting for processing, retries = %d",_name,_processingTimeout, _retryCnt));	
 						_retryCnt++;
 						ProcessChangeState(eGPQStates.LaunchProcessing);
 					}
@@ -1288,9 +1307,14 @@ class GuardedProcessQueue extends Queue
 		_errorHandler = handler;
 	}
 
-	function onTimeout(handler)
+	function onProcessingTimeout(handler)
 	{
-		_timeoutHandler = handler;
+		_processingtimeoutHandler = handler;
+	}
+
+	function onQueueingTimeout(handler)
+	{
+		_queueingtimeoutHandler = handler;
 	}
 
 		function onMaxretries(handler)
@@ -1309,7 +1333,7 @@ class GuardedProcessQueue extends Queue
 	}
 
 	// overridden base functions
-	function SendToBack(name, element, processinghandler,onready = null)
+	function SendToBack(name, element, processinghandler,onreadyhandler )
 	{
 		if (base.ElementsWaiting() > _maxElements)
 		{
@@ -1319,14 +1343,14 @@ class GuardedProcessQueue extends Queue
 		}
 		else
 		{
-			base.SendToBack({n = name,e = element,h = processinghandler,r = onready});
+			base.SendToBack({n = name,e = element,h = processinghandler,r = onreadyhandler});
 			if (_processingSmState == eGPQStates.Idle)
 				_checkForEntry();
 		}
 	}
 
 	// sends new element to be processed to the front of the queue. Can be used to implement priority schemes.
-	function SendToFront(name, element, processinghandler,onready = null)
+	function SendToFront(name, element, processinghandler,onreadyhandler)
 	{
 		if (base.ElementsWaiting() > _maxElements)
 		{
@@ -1336,7 +1360,7 @@ class GuardedProcessQueue extends Queue
 		}
 		else
 		{
-			base.SendToFront({n = name,e = element,h = processinghandler,r = onready});
+			base.SendToFront({n = name,e = element,h = processinghandler,r = onreadyhandler});
 			if (_processingSmState == eGPQStates.Idle)
 				_checkForEntry();			
 		}
@@ -1349,14 +1373,14 @@ testProcess <- GuardedProcessQueue("Test",eQueueType.fifo,2,3,30);
 testProcess.onProcess(function(element){
     server.log("Executing generic handler on " + element);
     imp.wakeup(2,function(){
-    	testProcess.NotifyReady("It's done");
+    	testProcess.NotifyProcessingReady("It's done");
     	});
 });
 
 testProcess.onReady(function(element,result,retrycnt) {
 	server.log("Executing ready handler with result " + result + ": after " + retrycnt + " retries with " + testProcess.ElementsWaiting() + " waiting in queue");  });
 
-testProcess.onTimeout(function(element,timeoutperiod,retrycnt) {
+testProcess.onProcessingTimeout(function(element,timeoutperiod,retrycnt) {
 	server.log("Executing timeout handler after " + timeoutperiod + " secs and " + retrycnt + " retries");  });
 
 testProcess.onMaxretries(function(element,retrycnt) {
@@ -1380,57 +1404,56 @@ function injectElement()
 	  server.log(format("Inserting Element %d in processing queue",globalcnt ));
 
 /**** SPECIFIC HANDLERS  TEST ***************************/
-
-/*			testProcess.SendToBack("even",
-				format("Even Element %d",globalcnt++),
-				function(element) {
-
-			    server.log("Executing specific processing handler [" + element + "] on " + element); 
-			    imp.wakeup(0.1,function()
-			    	{
-			    		server.log("Notifying Ready ...");
-			    		testProcess.NotifyReady("It's done locally")})},
-			  function(element,result,retrycnt){
+/*
+			testProcess.SendToBack("even",					// name
+				{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
+				function(element) {											// processinghandler
+			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
+			    imp.wakeup(0.1,function()	{server.log("Notifying Ready ...");	testProcess.NotifyProcessingReady("It's done locally")})},
+			  function(element,result,retrycnt){			// readyhandler
 			  	server.log("Executing specific ready handler [" + element.e + "] with result :" + result + " after " + retrycnt + " retries"); 
-			  	});*/
+			  	});
 
-
+*/
 /**** GENERIC HANDLERS  TEST ***************************/
 
 /*			testProcess.SendToBack("odd",format("Odd Element %d",globalcnt++),null,null);*/
 
-/**** ERRORNOTIFICATION TEST ***************************/
+/**** ERROR NOTIFICATION TEST ***************************/
 
 /*			testProcess.SendToBack("even",
-				format("Even Element %d",globalcnt++),
+{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
 				function(element) {
 
-			    server.log("Executing specific processing handler [" + element + "] on " + element); 
-			    imp.wakeup(0.2,function()
-			    	{
+			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
+			    imp.wakeup(0.2,function()	{
 			    		server.log("Notifying Error ...");
-			    		testProcess.NotifyError("Error in reception")})},
+			    		testProcess.NotifyProcessingError("Error in reception")})},
 			  	null);
 
 
 	}
 */
-	/**** ERRORNOTIFICATION TEST ***************************/
+	/**** TIMEOUT NOTIFICATION TEST ***************************/
 
-			testProcess.SendToBack("even",
-				format("Even Element %d",globalcnt++),
-				function(element) {
+			testProcess.SendToBack("even",					// name
+				{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
+				function(element) {											// processinghandler
+			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
+			    local readywakeup = imp.wakeup(3,function()	{
+			    	server.log("Notifying Ready ...");	
+			    	testProcess.NotifyProcessingReady("It's done locally")});
+			    // emulate timeout situation
+			    imp.wakeup(element.timeout,function() {
+			    	imp.cancelwakeup(readywakeup);
+			    	testProcess.NotifyProcessingTimeout("timed out....")}.bindenv(this));
 
-			    server.log("Executing specific processing handler [" + element + "] on " + element); 
-			    imp.wakeup(0.2,function()
-			    	{
-			    		server.log("Notifying timeout ...");
-			    		testProcess.NotifyTimeout("Timeout in reception")})},
-			  	null);
+			    },
+			  	null);		// no ready handler for this test
 
 
 	}
-	imp.wakeup(10,injectElement);		
+	//imp.wakeup(10,injectElement);		
 }
 
 injectElement();
