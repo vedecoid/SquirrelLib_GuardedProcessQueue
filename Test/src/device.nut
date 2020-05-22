@@ -1,4 +1,4 @@
-#require "utilities.lib.nut:3.0.0"
+#require "utilities.lib.nut:3.0.1"
 
 @set APPNAME = "GuardedProcessQueue Library Device Test"
 @set VERSIONMAJOR = 2
@@ -13,27 +13,31 @@
 
 @include "..\\src\\GuardedProcessQueue.lib.nut"
 gShowall <- true;
-testProcess <- GuardedProcessQueue("Test",eQueueType.fifo,2,3,30);
 
-testProcess.onProcess(function(element){
-    server.log("Executing generic handler on " + element);
+// constructor(name, type, maxprocessingtimeout , maxretries,maxelements)
+testProcess <- GuardedProcessQueue("Test",eQueueType.fifo,10,3,10);
+
+testProcess.onProcess(function(entry){
+    server.log("[Generic handler] Executing processing handler on entry with reference " + entry._reference);
     imp.wakeup(2,function(){
     	testProcess.NotifyProcessingReady("It's done");
     	});
 });
 
-testProcess.onReady(function(element,result,retrycnt) {
-	server.log("Executing ready handler with result " + result + ": after " + retrycnt + " retries with " + testProcess.ElementsWaiting() + " waiting in queue");  });
+testProcess.onReady(function(entry,result,retrycnt) {
+	server.log("[Generic handler] Executing ready handler with result " + result + ": after " + retrycnt + " retries with " + testProcess.ElementsWaiting() + " waiting in queue");  });
 
-testProcess.onProcessingTimeout(function(element,retrycnt) {
-	server.log("Executing timeout handler after " + timeoutperiod + " secs and " + retrycnt + " retries");  });
+testProcess.onProcessingTimeout(function(entry,retrycnt) {
+	server.log("[Generic handler] Executing timeout handler after " + entry._timeout + " secs and " + retrycnt + " retries");  });
 
-testProcess.onMaxretries(function(element,retrycnt) {
-	server.log("Executing maxretries handler after " + retrycnt + " retries");  });
-testProcess.onException(function(element,state,e) {
-	server.log("Executing exception handler at state  " + state +  " with exception : " + e);  });
-testProcess.onMaxElements(function(item) {
-	server.log("Executing max element handler on " + item  );  });
+testProcess.onMaxretries(function(entry,retrycnt) {
+	server.log("[Generic handler] Executing maxretries handler after " + retrycnt + " retries");  });
+
+testProcess.onException(function(entry,state,e) {
+	server.log("[Generic handler] Executing exception handler at state  " + state +  " with exception : " + e);  });
+
+testProcess.onMaxElements(function(entry) {
+	server.log("[Generic handler] Executing max element handler on " + entry._reference  );  });
 
 
 testProcess.StartProcessing();
@@ -44,57 +48,69 @@ globalcnt <- 0;
 function injectElement()
 {
 
-	for (local i = 0; i < 25; i++)
+	for (local i = 0; i < 5; i++)
 	{
 	  server.log(format("Inserting Element %d in processing queue",globalcnt ));
 
 /**** SPECIFIC HANDLERS  TEST ***************************/
-/*
-			testProcess.SendToBack("even",					// name
-				{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
-				function(element) {											// processinghandler
-			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
-			    imp.wakeup(0.1,function()	{server.log("Notifying Ready ...");	testProcess.NotifyProcessingReady("It's done locally")})},
-			  function(element,result,retrycnt){			// readyhandler
-			  	server.log("Executing specific ready handler [" + element.e + "] with result :" + result + " after " + retrycnt + " retries"); 
-			  	});
 
-*/
+			testProcess.SendToBack(utilities.getNewUUID(),									// reference
+				format("Even Element %d",globalcnt++),	// element
+				function(entry) 
+				{											// processinghandler
+			    server.log("[Specific handler] Executing processing handler [" + entry._data + "] for item  with timeout " + entry._timeout ); 
+			    local readywakeup = imp.wakeup(0.5,function()	
+			    {
+			    	server.log("Notifying Ready ...");	
+			    	testProcess.NotifyProcessingReady(format("It's done locally for entry with reference %s",entry._reference));
+			    }.bindenv(this));
+			  }.bindenv(this),
+			  function(entry,result,retries) 
+			  {
+			  	server.log(format("[Specific handler] Processing ready for entry with reference %s and result %s after %d retries",entry._reference,result,retries));
+			  },			// no ready handler for this test
+			  5 );			// timeout
+
 /**** GENERIC HANDLERS  TEST ***************************/
 
 /*			testProcess.SendToBack("odd",format("Odd Element %d",globalcnt++),null,null);*/
 
 /**** ERROR NOTIFICATION TEST ***************************/
+/*			testProcess.SendToBack(utilities.getNewUUID(),									// reference
+				format("Even Element %d",globalcnt++),	// element
+				function(entry) 
+				{											// processinghandler
+			    server.log("[Specific handler] Executing processing handler [" + entry._data + "] for item  with timeout " + entry._timeout ); 
+			    imp.wakeup(4,function()	
+			    {
+			    	server.log("Notifying Error ...");	
+			    	testProcess.NotifyProcessingError(format("Error processing for entry with reference %s",entry._reference));
+			    }.bindenv(this));
+			  }.bindenv(this),
+			  function(entry,result,retries) 
+			  {
+			  	server.log(format("[Specific handler] Processing ready for entry with reference %s and result %s after %d retries",entry._reference,result,retries));
+			  },			// no ready handler for this test
+			  5 );			// timeout*/
 
-/*			testProcess.SendToBack("even",
-{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
-				function(element) {
-
-			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
-			    imp.wakeup(0.2,function()	{
-			    		server.log("Notifying Error ...");
-			    		testProcess.NotifyProcessingError("Error in reception")})},
-			  	null);
-
-
-	}
-*/
 	/**** TIMEOUT NOTIFICATION TEST ***************************/
 
-			testProcess.SendToBack("even",					// name
-				{data = format("Even Element %d",globalcnt++), timeout = 2},	// element
-				function(element) {											// processinghandler
-			    server.log("Executing specific processing handler [" + element.data + "] with timeout " + element.timeout ); 
-			    local readywakeup = imp.wakeup(3,function()	{
-			    	server.log("Notifying Ready ...");	
-			    	testProcess.NotifyProcessingReady("It's done locally")});
-			    // emulate timeout situation
-			    imp.wakeup(element.timeout,function() {
-			    	imp.cancelwakeup(readywakeup);
-			    	testProcess.NotifyProcessingTimeout("timed out....")}.bindenv(this));
-
-			    },
-			  	null);		// no ready handler for this test
+/*			testProcess.SendToBack(utilities.getNewUUID(),									// reference
+				format("Even Element %d",globalcnt++),	// element
+				function(entry) 
+				{											// processinghandler
+			    server.log("[Specific handler] Executing processing handler [" + entry._data + "] for item  with timeout " + entry._timeout ); 
+			    imp.wakeup(entry._timeout,function()	
+			    {
+			    	server.log("Notifying Timeout ...");	
+			    	testProcess.NotifyProcessingTimeout(entry._timeout);
+			    }.bindenv(this));
+			  }.bindenv(this),
+			  function(entry,result,retries) 
+			  {
+			  	server.log(format("[Specific handler] Processing ready for entry with reference %s and result %s after %d retries",entry._reference,result,retries));
+			  },			// no ready handler for this test
+			  5 );			// timeout*/
 
 
 	}

@@ -136,7 +136,7 @@ class GuardedProcessQueue extends Queue
 		{
 
 			return imp.wakeup(delay,function(){
-					Log("debug",format("Changing state to %s",state));
+					Log("debug",format("Changing state to %s with delay %d",state,delay));
 					_processingSmState = state;
 					_processSm();
 				}.bindenv(this));
@@ -159,6 +159,7 @@ class GuardedProcessQueue extends Queue
 	{
 		if (_timeoutwakeup != null)
 		{
+					server.log("Cancelling lock-up protection")
 			imp.cancelwakeup(_timeoutwakeup);		
 			_timeoutwakeup = null;
 		}
@@ -166,6 +167,7 @@ class GuardedProcessQueue extends Queue
 
 	function _startTimeoutProtection()
 	{
+		server.log("Starting lock-up protection")
 		_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutMaxPeriod);
 	}
 	
@@ -200,10 +202,10 @@ class GuardedProcessQueue extends Queue
 				if (_currentEntry._processinghandler == null) 
 				{
 					if (typeof _genericProcessingHandler == "function") 
-						_genericProcessingHandler(_currentEntry._data);
+						_genericProcessingHandler(_currentEntry);
 				}
 				else
-					_currentEntry._processinghandler(_currentEntry._data);
+					_currentEntry._processinghandler(_currentEntry);
 					// not really needed, but good to keep some separation of states
 				ProcessChangeState(eGPQStates.Processing);
 				break;				
@@ -220,10 +222,10 @@ class GuardedProcessQueue extends Queue
 				if (_currentEntry._processinghandler == null) 
 				{
 					if (typeof _genericProcessingHandler == "function") 
-						_genericProcessingHandler(_currentEntry._data);
+						_genericProcessingHandler(_currentEntry);
 				}
 				else
-					_currentEntry._processinghandler(_currentEntry._data);
+					_currentEntry._processinghandler(_currentEntry);
 					// not really needed, but good to keep some separation of states
 				ProcessChangeState(eGPQStates.Processing);
 				break;
@@ -232,7 +234,7 @@ class GuardedProcessQueue extends Queue
 			/* Wait while executing the associated process														*/
 			/**************************************************************************/
 			case eGPQStates.Processing:
-				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing start for Item with reference %d",_name,_currentEntry._reference);	
+				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ongoing for Item with reference %s, retry attempts =  %d",_name,_currentEntry._reference,_retryCnt));	
 				// shift to the next state is done asynchronously in the notification handlers picking up the completed event
 				break;
 			/**************************************************************************/
@@ -240,11 +242,11 @@ class GuardedProcessQueue extends Queue
 			/* execute Ready handler & go back to processing next item								*/
 			/**************************************************************************/
 			case eGPQStates.ProcessingComplete:
-				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ready for Item with reference %d, %d elements remaining in queue",_name,_currentEntry._reference,_buffer.len());				
+				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ready for Item with reference %s, %d elements remaining in queue",_name,_currentEntry._reference,_buffer.len()));				
 				if (typeof _currentEntry._readyhandler == "function")
-					_currentEntry._readyhandler(_currentEntry._reference,_processingResult,_retryCnt);
+					_currentEntry._readyhandler(_currentEntry,_processingResult,_retryCnt);
 				else if (typeof _genericReadyHandler == "function") 
-					_genericReadyHandler(_currentEntry._reference,_processingResult,_retryCnt);
+					_genericReadyHandler(_currentEntry,_processingResult,_retryCnt);
 	
 				_checkForEntry();
 				break;
@@ -260,7 +262,7 @@ class GuardedProcessQueue extends Queue
 				else
 				{
 					if (_genericErrorHandler != null) 
-						_genericErrorHandler(_currentEntry._reference,_processingError);
+						_genericErrorHandler(_currentEntry,_processingError);
 					Log("AppL3","[GuardedProcessQueue(" + _name + ")] Error occured : " + _processingError + ", retries = " + _retryCnt);	
 					_retryCnt++;
 					ProcessChangeState(eGPQStates.LaunchProcessing);
@@ -278,7 +280,7 @@ class GuardedProcessQueue extends Queue
 					else
 					{
 						if (_processingtimeoutHandler != null) 
-							_processingtimeoutHandler(_currentEntry._reference,_retryCnt);
+							_processingtimeoutHandler(_currentEntry,_retryCnt);
 						Log("AppL3",format("[GuardedProcessQueue(%s)] Timeout of %d occured waiting for processing, retries = %d",_name,_currentEntry._timeout, _retryCnt));	
 						_retryCnt++;
 						ProcessChangeState(eGPQStates.LaunchProcessing);
@@ -292,7 +294,7 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.ProcessMaxRetries:
 				Log("AppL3","[GuardedProcessQueue(" + _name + ")]  Max retries (" + _retryCnt + ") occured");	
 				if (_maxretryHandler != null) 
-						_maxretryHandler(_currentEntry._reference,_retryCnt);
+						_maxretryHandler(_currentEntry,_retryCnt);
 				_checkForEntry();
 				break;
 			default:
@@ -303,7 +305,7 @@ class GuardedProcessQueue extends Queue
 		{
 				ErrorLog("[GuardedProcessQueue(" + _name + "):_processSm] Exception encountered in state " + _processingSmState + " : " + e);
 				if (_exceptionHandler != null) 
-					_exceptionHandler(_currentEntry._reference,_processingSmState,e);			
+					_exceptionHandler(_currentEntry,_processingSmState,e);			
 					// for now, simply restart after the assigned exceptionhandler
 				ProcessChangeState(eGPQStates.Idle,0.1);	
 		}
@@ -328,47 +330,43 @@ class GuardedProcessQueue extends Queue
 	function onError(handler)
 	{
 		if (typeof handler == "function")
-		{
-			_genericErrorHandler = handler;
-			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _genericErrorHandler", _name)
-		}
+				_genericErrorHandler = handler;
+		else 
+			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _genericErrorHandler", _name));
+		
 	}
 
 	function onProcessingTimeout(handler)
 	{
 		if (typeof handler == "function")
-		{
+
 			_processingtimeoutHandler = handler;
-			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _processingtimeoutHandler", _name)
-		}
+		else 
+			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _processingtimeoutHandler", _name));
 	}
 
 	function onMaxretries(handler)
 	{
 		if (typeof handler == "function")
-		{
 			_maxretryHandler = handler;
-			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _maxretryHandler", _name)
-		}
-
+		else 
+			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _maxretryHandler", _name));
 	}
 
 	function onException(handler)
 	{
 		if (typeof handler == "function")
-		{
 			_exceptionHandler = handler;
-			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _exceptionHandler", _name)
-		}
+		else 
+			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _exceptionHandler", _name));
 	}
 
 	function onMaxElements(handler)
 	{
 		if (typeof handler == "function")
-		{
 			_maxelementHandler = handler;
-			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _maxelementHandler", _name)
-		}		
+		else 
+			throw(format("[GuardedProcessQueue(%s)] Attempt to assign non function to _maxelementHandler", _name));
 	}
 
 	// overridden base functions
