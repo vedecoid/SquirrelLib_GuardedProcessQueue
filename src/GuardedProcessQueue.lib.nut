@@ -117,6 +117,12 @@ class GuardedProcessQueue extends Queue
 		ProcessChangeState(eGPQStates.ProcessingTimeout);		
 	}
 
+	function NotifyProcessingBusy()
+  {
+		_cancelTimeoutProtection();
+		ProcessChangeState(eGPQStates.LaunchProcessing,1);		
+	}
+
 	function Unlock()
 	{
 		_processingSmState = eGPQStates.ProcessingComplete;
