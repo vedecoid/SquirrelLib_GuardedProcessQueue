@@ -225,13 +225,15 @@ class GuardedProcessQueue extends Queue
 				_startTimeoutProtection();
 
 				// if no specific handler is defined for this entry, then use the generic one
-				if (_currentEntry._processinghandler == null) 
+				if (typeof _currentEntry._processinghandler == "function") 
 				{
-					if (typeof _genericProcessingHandler == "function") 
+					_currentEntry._processinghandler(_currentEntry);
+				}
+				
+				if (typeof _genericProcessingHandler == "function") 
 						_genericProcessingHandler(_currentEntry);
 				}
-				else
-					_currentEntry._processinghandler(_currentEntry);
+
 					// not really needed, but good to keep some separation of states
 				ProcessChangeState(eGPQStates.Processing);
 				break;
@@ -251,7 +253,8 @@ class GuardedProcessQueue extends Queue
 				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ready for Item with reference %s, %d elements remaining in queue",_name,_currentEntry._reference,_buffer.len()));				
 				if (typeof _currentEntry._readyhandler == "function")
 					_currentEntry._readyhandler(_currentEntry,_processingResult,_retryCnt);
-				else if (typeof _genericReadyHandler == "function") 
+				
+				if (typeof _genericReadyHandler == "function") 
 					_genericReadyHandler(_currentEntry,_processingResult,_retryCnt);
 	
 				_checkForEntry();
