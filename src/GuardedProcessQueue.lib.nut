@@ -49,7 +49,7 @@ class QueueEntry
 
 class GuardedProcessQueue extends Queue
 {
-	static VERSION = "2.0.0";
+	static VERSION = "3.0.0";
 
 	_name = null;
 	_genericProcessingHandler = null;
