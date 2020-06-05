@@ -232,7 +232,6 @@ class GuardedProcessQueue extends Queue
 				
 				if (typeof _genericProcessingHandler == "function") 
 						_genericProcessingHandler(_currentEntry);
-				}
 
 					// not really needed, but good to keep some separation of states
 				ProcessChangeState(eGPQStates.Processing);
