@@ -164,7 +164,7 @@ class GuardedProcessQueue extends Queue
 	{
 		if (_timeoutwakeup != null)
 		{
-					server.log("Cancelling lock-up protection")
+					//server.log("Cancelling lock-up protection")
 			imp.cancelwakeup(_timeoutwakeup);		
 			_timeoutwakeup = null;
 		}
@@ -172,7 +172,7 @@ class GuardedProcessQueue extends Queue
 
 	function _startTimeoutProtection()
 	{
-		server.log("Starting lock-up protection")
+		//server.log("Starting lock-up protection")
 		_timeoutwakeup = ProcessChangeState(eGPQStates.ProcessingTimeout,_timeoutMaxPeriod);
 	}
 	
