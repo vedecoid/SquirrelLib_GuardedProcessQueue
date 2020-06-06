@@ -134,7 +134,7 @@ class GuardedProcessQueue extends Queue
 	{
 		if (delay == 0)
 		{
-			Log("debug",format("Changing state to %s",state));
+			Log("debug",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s",state));
 			_processingSmState = state;
 			return imp.wakeup(0,function(){_processSm();}.bindenv(this));
 		}
@@ -142,13 +142,12 @@ class GuardedProcessQueue extends Queue
 		{
 
 			return imp.wakeup(delay,function(){
-					Log("debug",format("Changing state to %s with delay %d",state,delay));
+					Log("debug",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s with delay %d",state,delay));
 					_processingSmState = state;
 					_processSm();
 				}.bindenv(this));
 		}
 	}
-
 	function _checkForEntry()
 	{
 		if (_buffer.len() != 0) 
