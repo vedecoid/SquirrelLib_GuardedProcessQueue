@@ -134,7 +134,9 @@ class GuardedProcessQueue extends Queue
 	{
 		if (delay == 0)
 		{
+@if DEBUG
 			Log("debug",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s",state));
+@endif
 			_processingSmState = state;
 			return imp.wakeup(0,function(){_processSm();}.bindenv(this));
 		}
@@ -142,7 +144,9 @@ class GuardedProcessQueue extends Queue
 		{
 
 			return imp.wakeup(delay,function(){
+@if DEBUG
 					Log("debug",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s with delay %d",state,delay));
+@endif					
 					_processingSmState = state;
 					_processSm();
 				}.bindenv(this));
@@ -250,7 +254,12 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.ProcessingComplete:
 				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ready for Item with reference %s, %d elements remaining in queue",_name,_currentEntry._reference,_buffer.len()));				
 				if (typeof _currentEntry._readyhandler == "function")
+				{
+@if DEBUG					
+					Log("debug","Specific ready handler : " + _currentEntry._readyhandler)
+@endif					
 					_currentEntry._readyhandler(_currentEntry,_processingResult,_retryCnt);
+				}
 				
 				if (typeof _genericReadyHandler == "function") 
 					_genericReadyHandler(_currentEntry,_processingResult,_retryCnt);
