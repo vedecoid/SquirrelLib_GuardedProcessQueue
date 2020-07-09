@@ -142,7 +142,7 @@ class GuardedProcessQueue extends Queue
 		{
 
 			return imp.wakeup(delay,function(){
-					Log("Queue",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s with delay %d",state,delay));
+					Log("Queue",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s after delay of %d sec",state,delay));
 			
 					_processingSmState = state;
 					_processSm();
@@ -405,7 +405,7 @@ class GuardedProcessQueue extends Queue
 	{
 		if (base.ElementsWaiting() > _maxElements)
 		{
-			ErrorLog("[GuardedProcessQueue(" + _name + "):SendToBack] Max number of elements reached (" + _maxElements + "), ignoring");
+			ErrorLog("[GuardedProcessQueue(" + _name + "):SendToFront] Max number of elements reached (" + _maxElements + "), ignoring");
 			if (_maxelementHandler != null)
 				_maxelementHandler(element);
 		}
