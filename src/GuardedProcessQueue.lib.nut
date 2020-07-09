@@ -1,4 +1,4 @@
-@include once "github:vedecoid/SquirrelLib_Queue/src/Queue.lib.nut@V2.0.0" 
+//@include once "github:vedecoid/SquirrelLib_Queue/src/Queue.lib.nut@V2.0.0" 
 
 
 const MAXPROCESSINGTIMEOUTPERIOD = 10;
