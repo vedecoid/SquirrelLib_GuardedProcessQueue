@@ -134,9 +134,7 @@ class GuardedProcessQueue extends Queue
 	{
 		if (delay == 0)
 		{
-@if DEBUG
-			Log("debug",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s",state));
-@endif
+			Log("Queue",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s",state));
 			_processingSmState = state;
 			return imp.wakeup(0,function(){_processSm();}.bindenv(this));
 		}
@@ -144,9 +142,8 @@ class GuardedProcessQueue extends Queue
 		{
 
 			return imp.wakeup(delay,function(){
-@if DEBUG
-					Log("debug",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s with delay %d",state,delay));
-@endif					
+					Log("Queue",format("[GuardedProcessQueue(" + _name + ")] Changing state to %s with delay %d",state,delay));
+			
 					_processingSmState = state;
 					_processSm();
 				}.bindenv(this));
@@ -203,7 +200,7 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.LaunchProcessingNew:
 			// new entry, retrieve from queueu and reset retrycnt
 				_currentEntry = base.Receive();
-				Log("AppL3",format("[GuardedProcessQueue(%s)] New item retrieved from queue with reference %s, %d items remaining",_name,_currentEntry._reference,ElementsWaiting()));	
+				Log("Queue",format("[GuardedProcessQueue(%s)] New item retrieved from queue with reference %s, %d items remaining",_name,_currentEntry._reference,ElementsWaiting()));	
 				_retryCnt = 0;			
 				// change to the timeout state after the timeout period. This is needed in case the queue entry fails to notify timeout
 				_startTimeoutProtection();
@@ -245,7 +242,7 @@ class GuardedProcessQueue extends Queue
 			/* Wait while executing the associated process														*/
 			/**************************************************************************/
 			case eGPQStates.Processing:
-				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ongoing for Item with reference %s, retry attempts =  %d",_name,_currentEntry._reference,_retryCnt));	
+				Log("Queue",format("[GuardedProcessQueue(%s)] Processing ongoing for Item with reference %s, retry attempts =  %d",_name,_currentEntry._reference,_retryCnt));	
 				// shift to the next state is done asynchronously in the notification handlers picking up the completed event
 				break;
 			/**************************************************************************/
@@ -253,7 +250,7 @@ class GuardedProcessQueue extends Queue
 			/* execute Ready handler & go back to processing next item								*/
 			/**************************************************************************/
 			case eGPQStates.ProcessingComplete:
-				Log("AppL3",format("[GuardedProcessQueue(%s)] Processing ready for Item with reference %s, %d elements remaining in queue",_name,_currentEntry._reference,_buffer.len()));				
+				Log("Queue",format("[GuardedProcessQueue(%s)] Processing ready for Item with reference %s, %d elements remaining in queue",_name,_currentEntry._reference,_buffer.len()));				
 				if (typeof _currentEntry._readyhandler == "function")
 				{
 @if DEBUG					
@@ -280,7 +277,7 @@ class GuardedProcessQueue extends Queue
 				{
 					if (_genericErrorHandler != null) 
 						_genericErrorHandler(_currentEntry,_processingError);
-					Log("AppL3","[GuardedProcessQueue(" + _name + ")] Error occured : " + _processingError + ", retries = " + _retryCnt);	
+					Log("Queue","[GuardedProcessQueue(" + _name + ")] Error occured : " + _processingError + ", retries = " + _retryCnt);	
 					_retryCnt++;
 					ProcessChangeState(eGPQStates.LaunchProcessing);
 				}
@@ -298,7 +295,7 @@ class GuardedProcessQueue extends Queue
 					{
 						if (_processingtimeoutHandler != null) 
 							_processingtimeoutHandler(_currentEntry,_retryCnt);
-						Log("AppL3",format("[GuardedProcessQueue(%s)] Timeout of %d occured waiting for processing, retries = %d",_name,_currentEntry._timeout, _retryCnt));	
+						Log("Queue",format("[GuardedProcessQueue(%s)] Timeout of %d occured waiting for processing, retries = %d",_name,_currentEntry._timeout, _retryCnt));	
 						_retryCnt++;
 						ProcessChangeState(eGPQStates.LaunchProcessing);
 					}
@@ -309,7 +306,7 @@ class GuardedProcessQueue extends Queue
 			/* If max retries is reached, execute max retry handler										*/
 			/**************************************************************************/
 			case eGPQStates.ProcessMaxRetries:
-				Log("AppL3","[GuardedProcessQueue(" + _name + ")]  Max retries (" + _retryCnt + ") occured");	
+				Log("Queue","[GuardedProcessQueue(" + _name + ")]  Max retries (" + _retryCnt + ") occured");	
 				if (_maxretryHandler != null) 
 						_maxretryHandler(_currentEntry,_retryCnt);
 				_checkForEntry();
