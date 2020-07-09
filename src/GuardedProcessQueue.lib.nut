@@ -190,7 +190,7 @@ class GuardedProcessQueue extends Queue
 			/* State : init																														*/
 			/**************************************************************************/
 			case eGPQStates.Init:
-				Log("AppL1","[GuardedProcessQueue(" + _name + "):_processSm] : Starting up...");
+				Log("AppL1","[GuardedProcessQueue(" + _name + "] Starting up...");
 				_checkForEntry();
 				break;	
 
@@ -203,6 +203,7 @@ class GuardedProcessQueue extends Queue
 			case eGPQStates.LaunchProcessingNew:
 			// new entry, retrieve from queueu and reset retrycnt
 				_currentEntry = base.Receive();
+				Log("AppL3",format("[GuardedProcessQueue(%s)] New item retrieved from queue with reference %s, %d items remaining",_name,_currentEntry._reference,ElementsWaiting()));	
 				_retryCnt = 0;			
 				// change to the timeout state after the timeout period. This is needed in case the queue entry fails to notify timeout
 				_startTimeoutProtection();
